@@ -103,3 +103,94 @@ class WireResult(_AnakinModel):
     credits_used: int = 0
     execution_ms: int = 0
     error: WireError | None = None
+
+
+# ─── SearchResult (sync) ──────────────────────────────────────────────────────
+
+
+class SearchResultItem(_AnakinModel):
+    url: str
+    title: str | None = None
+    snippet: str | None = None
+    date: str | None = None
+    last_updated: str | None = None
+
+
+class SearchResult(_AnakinModel):
+    id: str
+    results: list[SearchResultItem] = Field(default_factory=list)
+
+
+# ─── AgenticSearchResult ──────────────────────────────────────────────────────
+
+
+class AgenticSearchData(_AnakinModel):
+    """The `generatedJson` payload from an agentic-search job."""
+
+    summary: str | None = None
+    structured_data: dict[str, Any] | None = None
+    data_schema: dict[str, Any] | None = None
+
+
+class AgenticSearchResult(_AnakinModel):
+    id: str
+    status: TerminalStatus
+    job_type: str = Field("agentic_search", alias="jobType")
+    generated_json: AgenticSearchData | None = Field(None, alias="generatedJson")
+    cached: bool = False
+    created_at: datetime | None = Field(None, alias="createdAt")
+    completed_at: datetime | None = Field(None, alias="completedAt")
+    duration_ms: int = Field(0, alias="durationMs")
+    error: str | None = None
+
+
+# ─── Browser sessions, recordings, activity, countries ────────────────────────
+
+
+class BrowserSession(_AnakinModel):
+    id: str = Field(..., alias="sessionId")
+    name: str | None = None
+    website_url: str | None = Field(None, alias="websiteUrl")
+    website_domain: str | None = Field(None, alias="websiteDomain")
+    is_active: bool = Field(True, alias="isActive")
+    created_at: datetime | None = Field(None, alias="createdAt")
+    last_used_at: datetime | None = Field(None, alias="lastUsedAt")
+    expires_at: datetime | None = Field(None, alias="expiresAt")
+    cookie_count: int | None = Field(None, alias="cookieCount")
+    storage_item_count: int | None = Field(None, alias="storageItemCount")
+
+
+class BrowserSessionHandle(_AnakinModel):
+    """Returned by sessions.create — contains the noVNC URL for interactive setup."""
+
+    session_id: str = Field(..., alias="sessionId")
+    novnc_url: str | None = Field(None, alias="novncUrl")
+    access_token: str | None = Field(None, alias="accessToken")
+    expires_in: int | None = Field(None, alias="expiresIn")
+    ws_url: str | None = Field(None, alias="wsUrl")
+
+
+class Recording(_AnakinModel):
+    id: str
+    conn_id: str = Field(..., alias="connId")
+    s3_path: str | None = Field(None, alias="s3Path")
+    duration: int = 0
+    file_size: int = Field(0, alias="fileSize")
+    status: str = "completed"
+    credits_used: int = Field(0, alias="creditsUsed")
+    created_at: datetime | None = Field(None, alias="createdAt")
+
+
+class ActivitySummary(_AnakinModel):
+    """Free-form activity summary; shape varies. Exposed as raw dict for forward-compat."""
+
+    data: dict[str, Any]
+
+    @classmethod
+    def from_response(cls, body: dict[str, Any]) -> ActivitySummary:
+        return cls(data=body)
+
+
+class Country(_AnakinModel):
+    code: str
+    name: str | None = None

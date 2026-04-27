@@ -13,6 +13,7 @@ API key resolution: explicit `api_key=` argument > `ANAKIN_API_KEY` env var.
 
 from anakin._version import __version__
 from anakin.client import Anakin
+from anakin.countries import SUPPORTED_COUNTRIES, SUPPORTED_COUNTRY_CODES
 from anakin.errors import (
     AnakinError,
     AuthenticationError,
@@ -29,21 +30,36 @@ from anakin.errors import (
     WireAuthRequiredError,
 )
 from anakin.models import (
+    ActivitySummary,
+    AgenticSearchData,
+    AgenticSearchResult,
+    BrowserSession,
+    BrowserSessionHandle,
+    Country,
     CrawlPage,
     CrawlResult,
     Document,
     MapResult,
+    Recording,
+    SearchResult,
+    SearchResultItem,
     WireError,
     WireResult,
 )
 
 __all__ = [
+    "SUPPORTED_COUNTRIES",
+    "SUPPORTED_COUNTRY_CODES",
+    "ActivitySummary",
+    "AgenticSearchData",
+    "AgenticSearchResult",
     "Anakin",
-    # Errors
     "AnakinError",
     "AuthenticationError",
+    "BrowserSession",
+    "BrowserSessionHandle",
     "ConfigurationError",
-    # Models
+    "Country",
     "CrawlPage",
     "CrawlResult",
     "Document",
@@ -56,6 +72,9 @@ __all__ = [
     "NotFoundError",
     "PermissionError",
     "RateLimitError",
+    "Recording",
+    "SearchResult",
+    "SearchResultItem",
     "ServerError",
     "WireAuthRequiredError",
     "WireError",
