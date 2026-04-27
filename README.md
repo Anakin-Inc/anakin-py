@@ -1,8 +1,9 @@
 # anakin
 
-[![PyPI version](https://img.shields.io/pypi/v/anakin.svg)](https://pypi.org/project/anakin/)
-[![Python Version](https://img.shields.io/pypi/pyversions/anakin.svg)](https://pypi.org/project/anakin/)
-[![License](https://img.shields.io/pypi/l/anakin.svg)](https://github.com/Anakin-Inc/anakin-py/blob/main/LICENSE)
+[![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue.svg)](https://www.python.org/downloads/)
+[![Type checked](https://img.shields.io/badge/type%20checked-mypy%20strict-1f5082.svg)](http://mypy-lang.org/)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+![Status](https://img.shields.io/badge/status-alpha-orange.svg)
 
 Official Python SDK for [Anakin](https://anakin.io) — web scraping, crawling, search, and Wire actions.
 
