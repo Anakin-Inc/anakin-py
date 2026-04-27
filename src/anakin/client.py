@@ -25,7 +25,6 @@ from anakin._http import (
 )
 from anakin.errors import JobFailedError
 from anakin.models import (
-    ActivitySummary,
     AgenticSearchResult,
     BrowserSession,
     BrowserSessionHandle,
@@ -33,7 +32,6 @@ from anakin.models import (
     CrawlResult,
     Document,
     MapResult,
-    Recording,
     SearchResult,
     WireResult,
 )
@@ -90,8 +88,6 @@ class Anakin:
 
         # Sub-namespaces
         self.sessions = SessionsClient(self._http)
-        self.recordings = RecordingsClient(self._http)
-        self.activity = ActivityClient(self._http)
 
     def close(self) -> None:
         """Close the underlying HTTP connection pool."""
@@ -260,49 +256,6 @@ class Anakin:
             )
         return CrawlResult.model_validate(result)
 
-    # ─── web_scrape (custom scraper) ──────────────────────────────────────────
-
-    def web_scrape(
-        self,
-        url: str,
-        *,
-        scraper_code: str,
-        scraper_scope: str = "GLOBAL",
-        scraper_params: dict[str, Any] | None = None,
-        action_type: str = "scrape_data",
-        poll_timeout: float | None = None,
-    ) -> Document:
-        """
-        Run a custom scraper against a URL.
-
-        Submits to POST /v1/web-scraper, polls /v1/web-scraper/:id. Returns the
-        same `Document` shape as `scrape()` once the underlying scraper finishes.
-        """
-        body: dict[str, Any] = {
-            "url": url,
-            "scraper_code": scraper_code,
-            "scraper_scope": scraper_scope,
-            "scraper_params": scraper_params or {},
-            "action_type": action_type,
-        }
-        submitted = self._http.post("/web-scraper", json=body)
-        job_id = _require_job_id(submitted)
-        result = self._http.poll(
-            f"/web-scraper/{job_id}",
-            is_terminal=_is_job_terminal,
-            poll_interval=self._poll_interval,
-            poll_max_interval=self._poll_max_interval,
-            poll_timeout=poll_timeout if poll_timeout is not None else self._poll_timeout,
-        )
-        if result.get("status") == "failed":
-            raise JobFailedError(
-                result.get("error") or "Web-scrape job failed",
-                status_code=None,
-                code=None,
-                body=result,
-            )
-        return Document.model_validate(result)
-
     # ─── search (synchronous) ─────────────────────────────────────────────────
 
     def search(self, prompt: str, *, limit: int = 5) -> SearchResult:
@@ -457,43 +410,6 @@ class SessionsClient:
 
     def delete(self, session_id: str) -> None:
         self._http.delete(f"/sessions/{session_id}")
-
-
-class RecordingsClient:
-    """Browser-session recordings. Accessible as `client.recordings.*`."""
-
-    def __init__(self, http: HttpClient) -> None:
-        self._http = http
-
-    def list(self) -> list[Recording]:
-        body = self._http.get("/recordings")
-        items = _unwrap_list(body, "recordings")
-        return [Recording.model_validate(r) for r in items]
-
-    def get(self, conn_id: str) -> Recording:
-        body = self._http.get(f"/recordings/{conn_id}")
-        return Recording.model_validate(body)
-
-
-class ActivityClient:
-    """Telemetry activity. Accessible as `client.activity.*`."""
-
-    def __init__(self, http: HttpClient) -> None:
-        self._http = http
-
-    def summary(
-        self,
-        *,
-        start_date: str | None = None,
-        end_date: str | None = None,
-    ) -> ActivitySummary:
-        params: dict[str, Any] = {}
-        if start_date is not None:
-            params["start_date"] = start_date
-        if end_date is not None:
-            params["end_date"] = end_date
-        body = self._http.get("/telemetry/activity/summary", params=params or None)
-        return ActivitySummary.from_response(body)
 
 
 # ─── helpers ──────────────────────────────────────────────────────────────────

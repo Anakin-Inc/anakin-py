@@ -32,44 +32,6 @@ def _make_client() -> Anakin:
     )
 
 
-# ─── web_scrape ──────────────────────────────────────────────────────────────
-
-
-@respx.mock
-def test_web_scrape_happy_path() -> None:
-    captured: dict[str, object] = {}
-
-    def _capture(request: httpx.Request) -> httpx.Response:
-        captured.update(_json.loads(request.content))
-        return httpx.Response(202, json={"jobId": "ws1", "status": "pending"})
-
-    respx.post(f"{BASE}/web-scraper").mock(side_effect=_capture)
-    respx.get(f"{BASE}/web-scraper/ws1").mock(
-        return_value=httpx.Response(
-            200,
-            json={
-                "id": "ws1",
-                "url": "https://example.com",
-                "status": "completed",
-                "cached": False,
-                "markdown": "# scraped",
-            },
-        )
-    )
-
-    client = _make_client()
-    doc = client.web_scrape(
-        "https://example.com",
-        scraper_code="my_scraper",
-        scraper_params={"keyword": "test"},
-    )
-    assert doc.markdown == "# scraped"
-    assert captured["scraper_code"] == "my_scraper"
-    assert captured["scraper_params"] == {"keyword": "test"}
-    assert captured["scraper_scope"] == "GLOBAL"
-    assert captured["action_type"] == "scrape_data"
-
-
 # ─── search (sync) ───────────────────────────────────────────────────────────
 
 
@@ -297,63 +259,6 @@ def test_sessions_update_and_delete() -> None:
     client.sessions.delete("s-1")  # no return; just shouldn't raise
 
 
-# ─── recordings sub-namespace ────────────────────────────────────────────────
-
-
-@respx.mock
-def test_recordings_list_and_get() -> None:
-    respx.get(f"{BASE}/recordings").mock(
-        return_value=httpx.Response(
-            200,
-            json=[
-                {
-                    "id": "r-1",
-                    "connId": "conn-1",
-                    "s3Path": "s3://bucket/r-1",
-                    "duration": 600,
-                    "fileSize": 12345,
-                    "status": "completed",
-                    "creditsUsed": 5,
-                }
-            ],
-        )
-    )
-    respx.get(f"{BASE}/recordings/conn-1").mock(
-        return_value=httpx.Response(
-            200,
-            json={
-                "id": "r-1",
-                "connId": "conn-1",
-                "s3Path": "s3://bucket/r-1",
-                "duration": 600,
-                "fileSize": 12345,
-                "status": "completed",
-                "creditsUsed": 5,
-            },
-        )
-    )
-    client = _make_client()
-    items = client.recordings.list()
-    assert len(items) == 1
-    one = client.recordings.get("conn-1")
-    assert one.id == "r-1"
-
-
-# ─── activity sub-namespace ──────────────────────────────────────────────────
-
-
-@respx.mock
-def test_activity_summary() -> None:
-    respx.get(f"{BASE}/telemetry/activity/summary").mock(
-        return_value=httpx.Response(
-            200, json={"total_jobs": 42, "credits_used": 100}
-        )
-    )
-    client = _make_client()
-    summary = client.activity.summary()
-    assert summary.data["total_jobs"] == 42
-
-
 # ─── countries (static, no network call) ─────────────────────────────────────
 
 
@@ -391,10 +296,3 @@ def test_sessions_list_null_response() -> None:
     assert client.sessions.list() == []
 
 
-@respx.mock
-def test_recordings_list_null_response() -> None:
-    respx.get(f"{BASE}/recordings").mock(
-        return_value=httpx.Response(200, json={"recordings": None})
-    )
-    client = _make_client()
-    assert client.recordings.list() == []

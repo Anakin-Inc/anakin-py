@@ -72,15 +72,7 @@ def main() -> int:
     print(f"  total_sessions={len(sessions)}")
     print(f"  first 3 names: {[s.name for s in sessions[:3]]}")
 
-    # ─── 6. recordings.list (free, GET) ─────────────────────────────────────
-    banner("recordings.list()")
-    recordings = client.recordings.list()
-    print(f"  total_recordings={len(recordings)}")
-    if recordings:
-        r = recordings[0]
-        print(f"  first: id={r.id}  duration={r.duration}s  status={r.status}")
-
-    # ─── 7. search (3 credits, sync) ────────────────────────────────────────
+    # ─── 6. search (3 credits, sync) ────────────────────────────────────────
     banner("search('python sdk best practices', limit=3)")
     t0 = time.monotonic()
     s_result = client.search("python sdk best practices", limit=3)
@@ -90,8 +82,7 @@ def main() -> int:
         print(f"  [{i}] {(r.title or '')[:50]:50s}  {r.url}")
 
     # NOTE: agentic_search (10 credits, ~2-5min) and wire (need valid action_id
-    # from dashboard) and web_scrape (need valid scraper_code) are not
-    # exercised here. Run those manually as needed.
+    # from dashboard) are not exercised here. Run those manually as needed.
 
     banner("ALL GOOD ✓")
     client.close()

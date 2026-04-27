@@ -30,7 +30,6 @@ from anakin.errors import (
     WireAuthRequiredError,
 )
 from anakin.models import (
-    ActivitySummary,
     AgenticSearchData,
     AgenticSearchResult,
     BrowserSession,
@@ -40,7 +39,6 @@ from anakin.models import (
     CrawlResult,
     Document,
     MapResult,
-    Recording,
     SearchResult,
     SearchResultItem,
     WireError,
@@ -50,7 +48,6 @@ from anakin.models import (
 __all__ = [
     "SUPPORTED_COUNTRIES",
     "SUPPORTED_COUNTRY_CODES",
-    "ActivitySummary",
     "AgenticSearchData",
     "AgenticSearchResult",
     "Anakin",
@@ -72,7 +69,6 @@ __all__ = [
     "NotFoundError",
     "PermissionError",
     "RateLimitError",
-    "Recording",
     "SearchResult",
     "SearchResultItem",
     "ServerError",

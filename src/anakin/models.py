@@ -170,27 +170,6 @@ class BrowserSessionHandle(_AnakinModel):
     ws_url: str | None = Field(None, alias="wsUrl")
 
 
-class Recording(_AnakinModel):
-    id: str
-    conn_id: str = Field(..., alias="connId")
-    s3_path: str | None = Field(None, alias="s3Path")
-    duration: int = 0
-    file_size: int = Field(0, alias="fileSize")
-    status: str = "completed"
-    credits_used: int = Field(0, alias="creditsUsed")
-    created_at: datetime | None = Field(None, alias="createdAt")
-
-
-class ActivitySummary(_AnakinModel):
-    """Free-form activity summary; shape varies. Exposed as raw dict for forward-compat."""
-
-    data: dict[str, Any]
-
-    @classmethod
-    def from_response(cls, body: dict[str, Any]) -> ActivitySummary:
-        return cls(data=body)
-
-
 class Country(_AnakinModel):
     code: str
     name: str | None = None
