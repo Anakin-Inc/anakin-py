@@ -3,7 +3,7 @@ requires = ["hatchling>=1.21"]
 build-backend = "hatchling.build"
 
 [project]
-name = "anakin"
+name = "anakin-sdk"
 dynamic = ["version"]
 description = "Official Python SDK for Anakin (anakin.io) — web scraping, crawling, search, and Wire actions."
 readme = "README.md"
