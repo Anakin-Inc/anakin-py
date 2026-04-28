@@ -1,15 +1,31 @@
-# Releasing `anakin` to PyPI
+# Releasing `anakin-sdk` to PyPI
+
+> **Distribution name** is `anakin-sdk` (PyPI). **Import name** is `anakin`
+> (you `pip install anakin-sdk` but `from anakin import Anakin`). They
+> intentionally differ because the unscoped `anakin` PyPI name is held
+> by an unrelated package.
 
 The repo ships with a GitHub Actions workflow at
 [`.github/workflows/publish.yml`](.github/workflows/publish.yml) that
 builds and publishes on every `v*` tag. You don't run `twine upload`
 manually — push a tag and the workflow does it.
 
+Before cutting a release, run the multi-version validation script
+to confirm the wheel installs cleanly on every supported Python:
+
+```bash
+scripts/test-multiver.sh
+# Builds wheel, then installs and runs tests in fresh venvs for
+# python 3.10, 3.11, 3.12, 3.13. Exits non-zero on any failure.
+```
+
+Set `PY_VERSIONS` to override (e.g. `PY_VERSIONS="3.11" scripts/test-multiver.sh`).
+
 ## One-time setup
 
 1. **Configure trusted publishing** on PyPI (recommended over an API token):
    - https://pypi.org/manage/account/publishing/
-   - Project name: `anakin`
+   - Project name: `anakin-sdk`
    - Owner: `Anakin-Inc`
    - Repository: `anakin-py`
    - Workflow: `publish.yml`
@@ -57,5 +73,5 @@ Use the `workflow_dispatch` trigger:
 Then install the test build:
 ```bash
 pip install --index-url https://test.pypi.org/simple/ \
-  --extra-index-url https://pypi.org/simple/ anakin
+  --extra-index-url https://pypi.org/simple/ anakin-sdk
 ```
