@@ -1,4 +1,4 @@
-# anakin
+# anakin-sdk
 
 [![Python](https://img.shields.io/badge/python-%E2%89%A53.10-blue.svg)](https://www.python.org/downloads/)
 [![Type checked](https://img.shields.io/badge/type%20checked-mypy%20strict-1f5082.svg)](http://mypy-lang.org/)
@@ -12,8 +12,10 @@ Official Python SDK for [Anakin](https://anakin.io) — web scraping, crawling, 
 ## Install
 
 ```bash
-pip install anakin
+pip install anakin-sdk
 ```
+
+Note: distribution name is `anakin-sdk` on PyPI; the Python import name is `anakin`. So you `pip install anakin-sdk` but `from anakin import Anakin` in your code.
 
 ## Quickstart
 

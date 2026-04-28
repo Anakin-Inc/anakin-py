@@ -45,7 +45,7 @@ No secrets to store anywhere — trusted publishing uses GitHub OIDC.
 4. The `publish.yml` workflow fires on the tag, builds wheel + sdist,
    verifies the version, and publishes to PyPI.
 
-5. Verify: `pip install anakin==0.1.1 --no-cache-dir`
+5. Verify: `pip install anakin-sdk==0.1.1 --no-cache-dir`
 
 ## Dry run via TestPyPI
 

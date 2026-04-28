@@ -9,7 +9,7 @@ Five copy-paste-able recipes that show the most common workflows:
 5. Run a pre-built Wire action
 
 Run:
-    pip install anakin
+    pip install anakin-sdk
     ANAKIN_API_KEY=ak-... python examples/quickstart.py
 """
 
