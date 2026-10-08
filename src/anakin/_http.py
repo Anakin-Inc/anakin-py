@@ -28,6 +28,7 @@ import time
 from collections.abc import Generator
 from dataclasses import dataclass
 from typing import Any, TypeVar
+from urllib.parse import urlsplit
 
 import httpx
 
@@ -130,6 +131,12 @@ class ClientConfig:
             poll_timeout=poll_timeout,
         )
 
+    @property
+    def is_hosted(self) -> bool:
+        """True for Anakin's hosted API; False for a self-hosted AnakinScraper instance."""
+        host = urlsplit(self.base_url).hostname or ""
+        return host == "anakin.io" or host.endswith(".anakin.io")
+
     def headers(self) -> dict[str, str]:
         headers = {
             "User-Agent": f"anakin-py/{__version__}",
@@ -141,7 +148,8 @@ class ClientConfig:
 
 
 def _require_key(cfg: ClientConfig, call: Call) -> None:
-    if call.auth and not cfg.api_key:
+    # Self-hosted instances decide auth themselves; only the hosted API needs a key.
+    if call.auth and not cfg.api_key and cfg.is_hosted:
         raise ConfigurationError(
             f"{call.method} {call.path} needs an Anakin API key. Pass api_key=... or set "
             f"ANAKIN_API_KEY. Get a free key (300 credits) at {DASHBOARD_URL}/signup. "

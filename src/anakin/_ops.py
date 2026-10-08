@@ -282,7 +282,8 @@ def scrape(
             "webhook_url": webhook_url,
         }
     )
-    use_inline = (not cfg.api_key) if inline is None else inline
+    # Keyless on the hosted API -> the inline (Zero Touch) endpoint.
+    use_inline = (not cfg.api_key and cfg.is_hosted) if inline is None else inline
     if not use_inline:
         return (
             yield from _job(

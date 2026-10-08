@@ -763,6 +763,22 @@ def test_missing_job_id_raises_anakin_error() -> None:
         _client().map("https://e.com")
 
 
+@respx.mock
+def test_self_hosted_needs_no_key_and_uses_async_scrape() -> None:
+    """A non-anakin.io base_url (self-hosted AnakinScraper) never requires a key."""
+    local = "http://localhost:8080/v1"
+    submit = respx.post(f"{local}/url-scraper").mock(
+        return_value=httpx.Response(202, json={"jobId": "j", "status": "pending"})
+    )
+    respx.get(f"{local}/url-scraper/j").mock(
+        return_value=httpx.Response(200, json={"id": "j", "status": "completed", "markdown": "x"})
+    )
+    client = Anakin(base_url=local, poll_interval=0.001)
+    assert client._cfg.is_hosted is False
+    assert client.scrape("https://e.com").markdown == "x"
+    assert "X-API-Key" not in submit.calls.last.request.headers
+
+
 def test_keyless_monitor_call_fails_fast() -> None:
     with pytest.raises(ConfigurationError, match=r"anakin\.io/signup"):
         Anakin(base_url=BASE).monitors.list()

@@ -15,6 +15,7 @@ Brings the SDK up to the full public API and the Anakin MCP tool surface.
 - **Scraping**: `scrape_batch()` (up to 10 URLs), `download_screenshot()`, and `scrape()` options `output_schema`, `actions` (browser actions), `webhook_url` and `inline`.
 - **Monitoring** (`client.monitors.*`): page / site / wire monitors, controls, changes, snapshots, alerts and deliveries.
 - **AI Visibility** (`client.ai_visibility.*`): `search`, `get`, `list`, `sources`, `retry`.
+- **Self-hosted AnakinScraper**: any non-`anakin.io` `base_url` needs no API key, and `scrape()` uses the standard async endpoint there.
 - **Webhooks** (`client.webhooks.*`) plus `anakin.verify_webhook_signature()`.
 - **Browser API**: `client.browser.connect_url()`, `client.browser.headers()`, `client.browser.recordings`.
 - `wait=False` on every job method (returns immediately, `status="pending"`), and `get_scrape`, `get_scrape_batch`, `get_map`, `get_crawl`, `get_agentic_search` to fetch jobs later.
