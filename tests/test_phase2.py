@@ -1,6 +1,6 @@
 """
-Unit tests for Phase 2 methods: web_scrape, search, agentic_search, wire,
-sub-namespaces (sessions, recordings, activity), and countries().
+Unit tests for search, agentic_search, wire, the sessions namespace, and
+countries().
 
 All HTTP traffic mocked via respx — no real network.
 """
@@ -109,7 +109,7 @@ def test_agentic_search_with_schema() -> None:
     assert captured["useBrowser"] is True
 
 
-# ─── wire (Holocron) ─────────────────────────────────────────────────────────
+# ─── wire ─────────────────────────────────────────────────────────
 
 
 @respx.mock
@@ -123,13 +123,13 @@ def test_wire_happy_path() -> None:
             json={
                 "status": "processing",
                 "job_id": "w1",
-                "poll_url": "/v1/holocron/jobs/w1",
+                "poll_url": "/v1/wire/jobs/w1",
             },
         )
 
-    respx.post(f"{BASE}/holocron/task").mock(side_effect=_capture)
-    # Note: wire polls /v1/holocron/jobs/:id, not /v1/holocron/task/:id
-    respx.get(f"{BASE}/holocron/jobs/w1").mock(
+    respx.post(f"{BASE}/wire/task").mock(side_effect=_capture)
+    # Note: wire polls /v1/wire/jobs/:id, not /v1/wire/task/:id
+    respx.get(f"{BASE}/wire/jobs/w1").mock(
         return_value=httpx.Response(
             200,
             json={
@@ -156,7 +156,7 @@ def test_wire_happy_path() -> None:
 
 @respx.mock
 def test_wire_auth_required_raises_special_error() -> None:
-    respx.post(f"{BASE}/holocron/task").mock(
+    respx.post(f"{BASE}/wire/task").mock(
         return_value=httpx.Response(
             401,
             json={
@@ -164,7 +164,7 @@ def test_wire_auth_required_raises_special_error() -> None:
                 "error": {
                     "code": "AUTH_REQUIRED",
                     "message": "This action requires a LinkedIn connection.",
-                    "connect_url": "/products/holocron/linkedin/connect",
+                    "connect_url": "/products/wire/linkedin/connect",
                 },
             },
         )
@@ -172,17 +172,17 @@ def test_wire_auth_required_raises_special_error() -> None:
     client = _make_client()
     with pytest.raises(WireAuthRequiredError) as ei:
         client.wire("li_profile_scrape", {"profile_url": "x"})
-    assert ei.value.connect_url == "/products/holocron/linkedin/connect"
+    assert ei.value.connect_url == "https://anakin.io/products/wire/linkedin/connect"
 
 
 @respx.mock
 def test_wire_failed_job_raises() -> None:
-    respx.post(f"{BASE}/holocron/task").mock(
+    respx.post(f"{BASE}/wire/task").mock(
         return_value=httpx.Response(
             202, json={"status": "processing", "job_id": "wf1"}
         )
     )
-    respx.get(f"{BASE}/holocron/jobs/wf1").mock(
+    respx.get(f"{BASE}/wire/jobs/wf1").mock(
         return_value=httpx.Response(
             200,
             json={
@@ -283,7 +283,7 @@ def test_supported_country_codes_constant() -> None:
     assert {c.code for c in SUPPORTED_COUNTRIES} == SUPPORTED_COUNTRY_CODES
 
 
-# ─── _unwrap_list null tolerance ──────────────────────────────────────────────
+# ─── unwrap_list null tolerance ──────────────────────────────────────────────
 
 
 @respx.mock

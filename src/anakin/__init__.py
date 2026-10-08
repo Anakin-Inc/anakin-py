@@ -1,23 +1,40 @@
 """
-Anakin Python SDK.
+Anakin Python SDK: web scraping, crawling, search, Wire actions, monitoring
+and AI visibility for https://anakin.io.
 
 Quickstart:
     from anakin import Anakin
 
-    client = Anakin(api_key="ak-...")
-    doc = client.scrape("https://example.com", formats=["markdown"])
+    client = Anakin(api_key="ak-...")       # or set ANAKIN_API_KEY
+    doc = client.scrape("https://example.com")
     print(doc.markdown)
 
-API key resolution: explicit `api_key=` argument > `ANAKIN_API_KEY` env var.
+Async: `from anakin import AsyncAnakin`. No key yet? `Anakin()` runs in
+keyless Zero Touch mode for `scrape()` and Wire discovery.
 """
 
 from anakin._version import __version__
-from anakin.client import Anakin
+from anakin.async_client import (
+    AsyncAIVisibilityResource,
+    AsyncAnakin,
+    AsyncMonitorsResource,
+    AsyncWebhooksResource,
+    AsyncWireResource,
+)
+from anakin.client import (
+    AIVisibilityResource,
+    Anakin,
+    MonitorsResource,
+    WebhooksResource,
+    WireResource,
+)
 from anakin.countries import SUPPORTED_COUNTRIES, SUPPORTED_COUNTRY_CODES
 from anakin.errors import (
     AnakinError,
+    AnakinPermissionError,
     AuthenticationError,
     ConfigurationError,
+    ConflictError,
     InsufficientCreditsError,
     InvalidRequestError,
     JobFailedError,
@@ -27,53 +44,135 @@ from anakin.errors import (
     PermissionError,
     RateLimitError,
     ServerError,
+    UnprocessableEntityError,
+    WireAuthExpiredError,
     WireAuthRequiredError,
+    WireLoginError,
 )
 from anakin.models import (
     AgenticSearchData,
     AgenticSearchResult,
+    AIVisibilitySearch,
+    AIVisibilitySearchSummary,
+    AIVisibilitySource,
+    AIVisibilitySourceResult,
+    AlertTestResult,
+    BatchScrapeItem,
+    BatchScrapeResult,
     BrowserSession,
     BrowserSessionHandle,
     Country,
     CrawlPage,
     CrawlResult,
+    Delivery,
     Document,
+    Image,
+    Link,
     MapResult,
+    Monitor,
+    MonitorChange,
+    MonitorRun,
+    MonitorSnapshot,
+    Recording,
     SearchResult,
     SearchResultItem,
+    SnapshotContent,
+    TrialInfo,
+    WebhookEndpoint,
+    WebhookTestResult,
+    WireAction,
+    WireActionMatch,
+    WireBuildRequest,
+    WireCatalog,
+    WireCatalogDetail,
+    WireCredential,
     WireError,
+    WireFile,
+    WireIdentity,
+    WireLoginResult,
     WireResult,
 )
+from anakin.types import BrowserAction, MonitorOptions, ScrapeFormat
+from anakin.webhooks import verify_webhook_signature
+
+# `PermissionError` (v0.1 name) stays importable but is left out of __all__ so
+# `from anakin import *` doesn't shadow the builtin. Prefer AnakinPermissionError.
+_ = PermissionError
 
 __all__ = [
     "SUPPORTED_COUNTRIES",
     "SUPPORTED_COUNTRY_CODES",
+    "AIVisibilityResource",
+    "AIVisibilitySearch",
+    "AIVisibilitySearchSummary",
+    "AIVisibilitySource",
+    "AIVisibilitySourceResult",
     "AgenticSearchData",
     "AgenticSearchResult",
+    "AlertTestResult",
     "Anakin",
     "AnakinError",
+    "AnakinPermissionError",
+    "AsyncAIVisibilityResource",
+    "AsyncAnakin",
+    "AsyncMonitorsResource",
+    "AsyncWebhooksResource",
+    "AsyncWireResource",
     "AuthenticationError",
+    "BatchScrapeItem",
+    "BatchScrapeResult",
+    "BrowserAction",
     "BrowserSession",
     "BrowserSessionHandle",
     "ConfigurationError",
+    "ConflictError",
     "Country",
     "CrawlPage",
     "CrawlResult",
+    "Delivery",
     "Document",
+    "Image",
     "InsufficientCreditsError",
     "InvalidRequestError",
     "JobFailedError",
     "JobTimeoutError",
+    "Link",
     "MapResult",
+    "Monitor",
+    "MonitorChange",
+    "MonitorOptions",
+    "MonitorRun",
+    "MonitorSnapshot",
+    "MonitorsResource",
     "NetworkError",
     "NotFoundError",
-    "PermissionError",
     "RateLimitError",
+    "Recording",
+    "ScrapeFormat",
     "SearchResult",
     "SearchResultItem",
     "ServerError",
+    "SnapshotContent",
+    "TrialInfo",
+    "UnprocessableEntityError",
+    "WebhookEndpoint",
+    "WebhookTestResult",
+    "WebhooksResource",
+    "WireAction",
+    "WireActionMatch",
+    "WireAuthExpiredError",
     "WireAuthRequiredError",
+    "WireBuildRequest",
+    "WireCatalog",
+    "WireCatalogDetail",
+    "WireCredential",
     "WireError",
+    "WireFile",
+    "WireIdentity",
+    "WireLoginError",
+    "WireLoginResult",
+    "WireResource",
     "WireResult",
     "__version__",
+    "verify_webhook_signature",
 ]

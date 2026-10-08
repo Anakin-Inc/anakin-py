@@ -1,13 +1,14 @@
 """
 Supported proxy countries.
 
-Static list — bundled with the SDK so no network call is needed to validate
-or autocomplete country codes. The data was generated from
-https://api.anakin.io/v1/countries on 2026-04-27.
+Static list, bundled with the SDK so no network call is needed to validate
+or autocomplete country codes. Generated from
+https://api.anakin.io/v1/countries on 2026-04-27 (207 locations, matching
+https://anakin.io/docs/api-reference/supported-countries).
 
-If Anakin adds new countries, regenerate this file:
+If Anakin adds countries, regenerate this file:
 
-    curl -s https://api.anakin.io/v1/countries | python3 scripts/refresh_countries.py
+    curl -s https://api.anakin.io/v1/countries | python scripts/refresh_countries.py
 
 Anakin uses lowercase ISO 3166-1 alpha-2 codes (e.g. "us", "gb", "in").
 """

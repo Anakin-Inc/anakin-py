@@ -40,22 +40,26 @@ def _make_client(**overrides: object) -> Anakin:
 # ─── Construction ─────────────────────────────────────────────────────────────
 
 
-def test_construct_without_key_raises() -> None:
-    with pytest.raises(ConfigurationError):
-        Anakin()
+def test_construct_without_key_is_keyless_mode() -> None:
+    """No key = Zero Touch mode: construction works, keyed calls fail fast locally."""
+    client = Anakin(base_url=BASE)
+    assert client.api_key_configured is False
+    with pytest.raises(ConfigurationError, match="needs an Anakin API key"):
+        client.crawl("https://e.com")
+    client.close()
 
 
 def test_construct_with_env_var(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ANAKIN_API_KEY", "ak-env")
     client = Anakin(base_url=BASE)
-    assert client._http._api_key == "ak-env"
+    assert client._cfg.api_key == "ak-env"
     client.close()
 
 
 def test_explicit_key_beats_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ANAKIN_API_KEY", "ak-env")
     client = Anakin(api_key="ak-explicit", base_url=BASE)
-    assert client._http._api_key == "ak-explicit"
+    assert client._cfg.api_key == "ak-explicit"
     client.close()
 
 

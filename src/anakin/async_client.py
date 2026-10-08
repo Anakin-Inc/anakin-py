@@ -1,14 +1,14 @@
 """
-Anakin client: the public, synchronous entry point.
+Anakin async client.
 
-Quickstart:
-    from anakin import Anakin
-    client = Anakin(api_key="ak-...")
-    doc = client.scrape("https://example.com")
-    print(doc.markdown)
+    from anakin import AsyncAnakin
 
-`anakin.async_client.AsyncAnakin` is generated from this file by
-`scripts/generate_async.py`. Edit this file, then re-run the script.
+    async with AsyncAnakin(api_key="ak-...") as client:
+        doc = await client.scrape("https://example.com")
+        print(doc.markdown)
+
+GENERATED FILE: do not edit. Source: `src/anakin/client.py`;
+regenerate with `python scripts/generate_async.py`.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ from typing import Any
 from typing_extensions import Unpack
 
 from anakin import _ops as ops
-from anakin._base import _BrowserStaticMixin, _StaticMixin, _SyncAPI, _SyncClientBase
+from anakin._base import _BrowserStaticMixin, _StaticMixin, _AsyncAPI, _AsyncClientBase
 from anakin._http import (
     DEFAULT_BASE_URL,
     DEFAULT_MAX_RETRIES,
@@ -30,7 +30,7 @@ from anakin._http import (
     DEFAULT_POLL_TIMEOUT,
     DEFAULT_TIMEOUT,
     ClientConfig,
-    SyncTransport,
+    AsyncTransport,
 )
 from anakin.models import (
     AgenticSearchResult,
@@ -67,9 +67,9 @@ from anakin.models import (
 from anakin.types import AuthMode, BrowserAction, MonitorOptions, ScrapeFormat
 
 
-class Anakin(_StaticMixin, _SyncClientBase):
+class AsyncAnakin(_StaticMixin, _AsyncClientBase):
     """
-    Anakin SDK client.
+    Anakin SDK client (asyncio).
 
     Args:
         api_key: API key. Falls back to the ANAKIN_API_KEY env var. If neither
@@ -106,18 +106,18 @@ class Anakin(_StaticMixin, _SyncClientBase):
             poll_max_interval=poll_max_interval,
             poll_timeout=poll_timeout,
         )
-        transport = SyncTransport(cfg)
+        transport = AsyncTransport(cfg)
         super().__init__(transport)
-        self.wire = WireResource(transport)
-        self.monitors = MonitorsResource(transport)
-        self.ai_visibility = AIVisibilityResource(transport)
-        self.webhooks = WebhooksResource(transport)
-        self.sessions = SessionsResource(transport)
-        self.browser = BrowserResource(transport)
+        self.wire = AsyncWireResource(transport)
+        self.monitors = AsyncMonitorsResource(transport)
+        self.ai_visibility = AsyncAIVisibilityResource(transport)
+        self.webhooks = AsyncWebhooksResource(transport)
+        self.sessions = AsyncSessionsResource(transport)
+        self.browser = AsyncBrowserResource(transport)
 
     # ─── scrape ───────────────────────────────────────────────────────────────
 
-    def scrape(
+    async def scrape(
         self,
         url: str,
         *,
@@ -152,7 +152,7 @@ class Anakin(_StaticMixin, _SyncClientBase):
             wait: False returns immediately with `status="pending"`; fetch
                 later with `get_scrape(doc.id)`.
         """
-        return self._run(
+        return await self._run(
             ops.scrape(
                 self._cfg,
                 url,
@@ -172,7 +172,7 @@ class Anakin(_StaticMixin, _SyncClientBase):
             )
         )
 
-    def scrape_batch(
+    async def scrape_batch(
         self,
         urls: Sequence[str],
         *,
@@ -190,7 +190,7 @@ class Anakin(_StaticMixin, _SyncClientBase):
         The batch is `completed` if any URL finished; check each
         `result.results[i].status`.
         """
-        return self._run(
+        return await self._run(
             ops.scrape_batch(
                 self._cfg,
                 urls,
@@ -204,24 +204,24 @@ class Anakin(_StaticMixin, _SyncClientBase):
             )
         )
 
-    def get_scrape(self, job_id: str) -> Document:
+    async def get_scrape(self, job_id: str) -> Document:
         """Fetch a scrape job by ID (e.g. after `scrape(..., wait=False)` or a webhook)."""
-        return self._run(ops.get_scrape(job_id))
+        return await self._run(ops.get_scrape(job_id))
 
-    def get_scrape_batch(self, job_id: str) -> BatchScrapeResult:
+    async def get_scrape_batch(self, job_id: str) -> BatchScrapeResult:
         """Fetch a batch scrape job by ID."""
-        return self._run(ops.get_scrape_batch(job_id))
+        return await self._run(ops.get_scrape_batch(job_id))
 
-    def download_screenshot(self, job_id: str, *, full_page: bool = False) -> bytes:
+    async def download_screenshot(self, job_id: str, *, full_page: bool = False) -> bytes:
         """
         Download the PNG captured by a scrape that requested the `screenshot`
         (or, with `full_page=True`, `screenshotFullPage`) format.
         """
-        return self._run(ops.download_screenshot(job_id, full_page=full_page))
+        return await self._run(ops.download_screenshot(job_id, full_page=full_page))
 
     # ─── map ──────────────────────────────────────────────────────────────────
 
-    def map(
+    async def map(
         self,
         url: str,
         *,
@@ -238,7 +238,7 @@ class Anakin(_StaticMixin, _SyncClientBase):
         poll_timeout: float | None = None,
     ) -> MapResult:
         """Discover URLs on a website (`POST /v1/map`). `limit` max 5000, `depth` max 5."""
-        return self._run(
+        return await self._run(
             ops.map_site(
                 self._cfg,
                 url,
@@ -256,13 +256,13 @@ class Anakin(_StaticMixin, _SyncClientBase):
             )
         )
 
-    def get_map(self, job_id: str) -> MapResult:
+    async def get_map(self, job_id: str) -> MapResult:
         """Fetch a map job by ID."""
-        return self._run(ops.get_map(job_id))
+        return await self._run(ops.get_map(job_id))
 
     # ─── crawl ────────────────────────────────────────────────────────────────
 
-    def crawl(
+    async def crawl(
         self,
         url: str,
         *,
@@ -279,7 +279,7 @@ class Anakin(_StaticMixin, _SyncClientBase):
         poll_timeout: float | None = None,
     ) -> CrawlResult:
         """Crawl a website and return each page's markdown (`POST /v1/crawl`)."""
-        return self._run(
+        return await self._run(
             ops.crawl(
                 self._cfg,
                 url,
@@ -297,17 +297,17 @@ class Anakin(_StaticMixin, _SyncClientBase):
             )
         )
 
-    def get_crawl(self, job_id: str) -> CrawlResult:
+    async def get_crawl(self, job_id: str) -> CrawlResult:
         """Fetch a crawl job by ID."""
-        return self._run(ops.get_crawl(job_id))
+        return await self._run(ops.get_crawl(job_id))
 
     # ─── search ───────────────────────────────────────────────────────────────
 
-    def search(self, prompt: str, *, limit: int = 5) -> SearchResult:
+    async def search(self, prompt: str, *, limit: int = 5) -> SearchResult:
         """AI web search. Synchronous, no polling. `limit` max 20."""
-        return self._run(ops.search(prompt, limit=limit))
+        return await self._run(ops.search(prompt, limit=limit))
 
-    def agentic_search(
+    async def agentic_search(
         self,
         prompt: str,
         *,
@@ -324,7 +324,7 @@ class Anakin(_StaticMixin, _SyncClientBase):
         `poll_timeout`. Returns a summary plus `structured_data` matching
         `schema` (inferred when omitted).
         """
-        return self._run(
+        return await self._run(
             ops.agentic_search(
                 self._cfg,
                 prompt,
@@ -336,38 +336,38 @@ class Anakin(_StaticMixin, _SyncClientBase):
             )
         )
 
-    def get_agentic_search(self, job_id: str) -> AgenticSearchResult:
+    async def get_agentic_search(self, job_id: str) -> AgenticSearchResult:
         """Fetch an agentic search job by ID."""
-        return self._run(ops.get_agentic_search(job_id))
+        return await self._run(ops.get_agentic_search(job_id))
 
 
 # ─── Wire ─────────────────────────────────────────────────────────────────────
 
 
-class WireSourcesResource(_SyncAPI):
+class AsyncWireSourcesResource(_AsyncAPI):
     """
     Identity sources: connect 1Password / Azure Key Vault so `wire.login`
     can read credentials from your vault. Accessible as `client.wire.sources`.
     Responses are plain dicts (provider-specific shapes).
     """
 
-    def providers(self) -> Any:
+    async def providers(self) -> Any:
         """Connectable providers and the fields each one needs."""
-        return self._run(ops.sources_providers())
+        return await self._run(ops.sources_providers())
 
-    def list(self) -> builtins.list[dict[str, Any]]:
-        return self._run(ops.sources_list())
+    async def list(self) -> builtins.list[dict[str, Any]]:
+        return await self._run(ops.sources_list())
 
-    def get(self, source_id: str) -> Any:
-        return self._run(ops.sources_get(source_id))
+    async def get(self, source_id: str) -> Any:
+        return await self._run(ops.sources_get(source_id))
 
-    def create(
+    async def create(
         self, provider: str, display_name: str, *, auth_method: str | None = None, **fields: Any
     ) -> Any:
         """Connect a vault. `fields` are the provider's connect fields (e.g. token=...)."""
-        return self._run(ops.sources_create(provider, display_name, auth_method, fields))
+        return await self._run(ops.sources_create(provider, display_name, auth_method, fields))
 
-    def update(
+    async def update(
         self,
         source_id: str,
         *,
@@ -376,43 +376,43 @@ class WireSourcesResource(_SyncAPI):
         **fields: Any,
     ) -> Any:
         """Rename a source and/or rotate its credential."""
-        return self._run(ops.sources_update(source_id, display_name, auth_method, fields))
+        return await self._run(ops.sources_update(source_id, display_name, auth_method, fields))
 
-    def verify(self, source_id: str) -> Any:
-        return self._run(ops.sources_verify(source_id))
+    async def verify(self, source_id: str) -> Any:
+        return await self._run(ops.sources_verify(source_id))
 
-    def delete(self, source_id: str, *, delete_identities: bool = False) -> Any:
-        return self._run(ops.sources_delete(source_id, delete_identities))
+    async def delete(self, source_id: str, *, delete_identities: bool = False) -> Any:
+        return await self._run(ops.sources_delete(source_id, delete_identities))
 
-    def identities(self, source_id: str) -> builtins.list[WireIdentity]:
-        return self._run(ops.sources_identities(source_id))
+    async def identities(self, source_id: str) -> builtins.list[WireIdentity]:
+        return await self._run(ops.sources_identities(source_id))
 
-    def containers(self, source_id: str) -> builtins.list[dict[str, Any]]:
-        return self._run(ops.sources_containers(source_id))
+    async def containers(self, source_id: str) -> builtins.list[dict[str, Any]]:
+        return await self._run(ops.sources_containers(source_id))
 
-    def entries(
+    async def entries(
         self, source_id: str, container_id: str, *, domain: str | None = None
     ) -> builtins.list[dict[str, Any]]:
-        return self._run(ops.sources_entries(source_id, container_id, domain))
+        return await self._run(ops.sources_entries(source_id, container_id, domain))
 
 
-class WireResource(_SyncAPI):
+class AsyncWireResource(_AsyncAPI):
     """
     Wire: pre-built actions on hundreds of sites. Accessible as `client.wire`.
 
     Typical flow::
 
-        matches = client.wire.discover("top phones on walmart")
-        result = client.wire.run(matches[0].action_id, {"query": "phones"})
+        matches = await client.wire.discover("top phones on walmart")
+        result = await client.wire.run(matches[0].action_id, {"query": "phones"})
 
     `client.wire(action_id, params)` is shorthand for `client.wire.run(...)`.
     """
 
     def __init__(self, transport: Any) -> None:
         super().__init__(transport)
-        self.sources = WireSourcesResource(transport)
+        self.sources = AsyncWireSourcesResource(transport)
 
-    def __call__(
+    async def __call__(
         self,
         action_id: str,
         params: Mapping[str, Any] | None = None,
@@ -424,7 +424,7 @@ class WireResource(_SyncAPI):
         poll_timeout: float | None = None,
     ) -> WireResult:
         """Shorthand for `run(...)`."""
-        return self._run(
+        return await self._run(
             ops.wire_run(
                 self._cfg,
                 action_id,
@@ -437,7 +437,7 @@ class WireResource(_SyncAPI):
             )
         )
 
-    def run(
+    async def run(
         self,
         action_id: str,
         params: Mapping[str, Any] | None = None,
@@ -461,7 +461,7 @@ class WireResource(_SyncAPI):
             WireAuthExpiredError: the credential's session expired; log in again.
             JobFailedError: the action ran and failed (credits are refunded).
         """
-        return self._run(
+        return await self._run(
             ops.wire_run(
                 self._cfg,
                 action_id,
@@ -474,24 +474,24 @@ class WireResource(_SyncAPI):
             )
         )
 
-    def zero_touch(self, action_id: str, params: Mapping[str, Any] | None = None) -> WireResult:
+    async def zero_touch(self, action_id: str, params: Mapping[str, Any] | None = None) -> WireResult:
         """
         Run a read-only action synchronously with no API key (`POST /v1/wire-run`).
 
         Metered by a free per-IP allowance; raises `InsufficientCreditsError`
         (with `.signup_url`) when it is used up.
         """
-        return self._run(ops.wire_zero_touch(action_id, params))
+        return await self._run(ops.wire_zero_touch(action_id, params))
 
-    def get_job(self, job_id: str) -> WireResult:
+    async def get_job(self, job_id: str) -> WireResult:
         """Fetch a Wire job's status/result."""
-        return self._run(ops.wire_get_job(job_id))
+        return await self._run(ops.wire_get_job(job_id))
 
-    def download(self, job_id: str, *, file: str | None = None) -> bytes:
+    async def download(self, job_id: str, *, file: str | None = None) -> bytes:
         """Download a file produced by a Wire job (see `WireResult.files`)."""
-        return self._run(ops.wire_download(job_id, file))
+        return await self._run(ops.wire_download(job_id, file))
 
-    def discover(
+    async def discover(
         self,
         q: str | None = None,
         *,
@@ -501,28 +501,28 @@ class WireResource(_SyncAPI):
         limit: int | None = None,
     ) -> builtins.list[WireActionMatch]:
         """Find actions by natural-language intent (`GET /v1/wire/resolve`). No key needed."""
-        return self._run(
+        return await self._run(
             ops.wire_discover(
                 q, catalog=catalog, category=category, auth_mode=auth_mode, limit=limit
             )
         )
 
-    def catalogs(self, *, scope: str | None = None) -> builtins.list[WireCatalog]:
+    async def catalogs(self, *, scope: str | None = None) -> builtins.list[WireCatalog]:
         """List every supported website. `scope="my"` = only catalogs with your private actions."""
-        return self._run(ops.wire_catalogs(scope))
+        return await self._run(ops.wire_catalogs(scope))
 
-    def catalog(self, slug: str) -> WireCatalogDetail:
+    async def catalog(self, slug: str) -> WireCatalogDetail:
         """One site's actions with parameter schemas, credit costs and login fields."""
-        return self._run(ops.wire_catalog(slug))
+        return await self._run(ops.wire_catalog(slug))
 
-    def identities(self, *, catalog_id: str | None = None) -> builtins.list[WireIdentity]:
+    async def identities(self, *, catalog_id: str | None = None) -> builtins.list[WireIdentity]:
         """Your saved site accounts. Each `credentials[i].id` is a `credential_id`."""
-        return self._run(ops.wire_identities(catalog_id))
+        return await self._run(ops.wire_identities(catalog_id))
 
-    def identity(self, identity_id: str) -> WireIdentity:
-        return self._run(ops.wire_identity(identity_id))
+    async def identity(self, identity_id: str) -> WireIdentity:
+        return await self._run(ops.wire_identity(identity_id))
 
-    def login(
+    async def login(
         self,
         catalog_slug: str,
         params: Mapping[str, Any] | None = None,
@@ -538,7 +538,7 @@ class WireResource(_SyncAPI):
         a vault locator (`source_id` + `source_ref` + `identity_name`). The
         password is never stored. Raises `WireLoginError` if sign-in fails.
         """
-        return self._run(
+        return await self._run(
             ops.wire_login(
                 catalog_slug,
                 params,
@@ -548,13 +548,13 @@ class WireResource(_SyncAPI):
             )
         )
 
-    def verify_credential(
+    async def verify_credential(
         self, identity_id: str, params: Mapping[str, Any] | None = None
     ) -> WireCredential:
         """Re-run sign-in for an existing identity and refresh its session."""
-        return self._run(ops.wire_verify_credential(identity_id, params))
+        return await self._run(ops.wire_verify_credential(identity_id, params))
 
-    def build(
+    async def build(
         self,
         website_url: str,
         goal: str,
@@ -572,7 +572,7 @@ class WireResource(_SyncAPI):
         Charges credits up front (refunded if the build fails). Track it with
         `get_build(build.id)`. Check `discover()` / `catalogs()` first.
         """
-        return self._run(
+        return await self._run(
             ops.wire_build(
                 website_url,
                 goal,
@@ -585,24 +585,24 @@ class WireResource(_SyncAPI):
             )
         )
 
-    def builds(
+    async def builds(
         self, *, status: str | None = None, page: int | None = None, limit: int | None = None
     ) -> builtins.list[WireBuildRequest]:
         """Your recent build requests."""
-        return self._run(ops.wire_builds(status, page, limit))
+        return await self._run(ops.wire_builds(status, page, limit))
 
-    def get_build(self, build_id: str) -> WireBuildRequest:
+    async def get_build(self, build_id: str) -> WireBuildRequest:
         """One build request: status, published `action_id`, and `skipped` capabilities."""
-        return self._run(ops.wire_get_build(build_id))
+        return await self._run(ops.wire_get_build(build_id))
 
 
 # ─── Monitors ─────────────────────────────────────────────────────────────────
 
 
-class MonitorsResource(_SyncAPI):
+class AsyncMonitorsResource(_AsyncAPI):
     """Website monitoring (`/v1/monitors`). Accessible as `client.monitors`."""
 
-    def create(
+    async def create(
         self, url: str, interval_minutes: int, **options: Unpack[MonitorOptions]
     ) -> Monitor:
         """
@@ -611,88 +611,88 @@ class MonitorsResource(_SyncAPI):
         Store `monitor.alert_webhook_secret` when you set `alert_webhook_url`;
         it is only returned here.
         """
-        return self._run(ops.monitors_create(ops.monitor_body(url, interval_minutes, options)))
+        return await self._run(ops.monitors_create(ops.monitor_body(url, interval_minutes, options)))
 
-    def update(
+    async def update(
         self, monitor_id: str, url: str, interval_minutes: int, **options: Unpack[MonitorOptions]
     ) -> Monitor:
         """Replace a monitor's configuration (full update, same fields as `create`)."""
-        return self._run(
+        return await self._run(
             ops.monitors_update(monitor_id, ops.monitor_body(url, interval_minutes, options))
         )
 
-    def list(self) -> builtins.list[Monitor]:
-        return self._run(ops.monitors_list())
+    async def list(self) -> builtins.list[Monitor]:
+        return await self._run(ops.monitors_list())
 
-    def get(self, monitor_id: str) -> Monitor:
-        return self._run(ops.monitors_get(monitor_id))
+    async def get(self, monitor_id: str) -> Monitor:
+        return await self._run(ops.monitors_get(monitor_id))
 
-    def delete(self, monitor_id: str) -> None:
+    async def delete(self, monitor_id: str) -> None:
         """Permanently delete a monitor and its history."""
-        self._run(ops.monitors_delete(monitor_id))
+        await self._run(ops.monitors_delete(monitor_id))
 
-    def pause(self, monitor_id: str) -> Monitor:
-        return self._run(ops.monitors_pause(monitor_id))
+    async def pause(self, monitor_id: str) -> Monitor:
+        return await self._run(ops.monitors_pause(monitor_id))
 
-    def resume(
+    async def resume(
         self, monitor_id: str, *, expires_at: str | date | datetime | None = None
     ) -> Monitor:
-        return self._run(ops.monitors_resume(monitor_id, expires_at))
+        return await self._run(ops.monitors_resume(monitor_id, expires_at))
 
-    def set_expiry(self, monitor_id: str, expires_at: str | date | datetime | None) -> Monitor:
+    async def set_expiry(self, monitor_id: str, expires_at: str | date | datetime | None) -> Monitor:
         """Change (or with None, remove) a monitor's end date."""
-        return self._run(ops.monitors_set_expiry(monitor_id, expires_at))
+        return await self._run(ops.monitors_set_expiry(monitor_id, expires_at))
 
-    def run_now(self, monitor_id: str) -> MonitorRun:
+    async def run_now(self, monitor_id: str) -> MonitorRun:
         """Queue an immediate check (billed like a scheduled one)."""
-        return self._run(ops.monitors_run_now(monitor_id))
+        return await self._run(ops.monitors_run_now(monitor_id))
 
-    def changes(self, monitor_id: str) -> builtins.list[MonitorChange]:
+    async def changes(self, monitor_id: str) -> builtins.list[MonitorChange]:
         """Detected changes, newest first (up to 200)."""
-        return self._run(ops.monitors_changes(monitor_id))
+        return await self._run(ops.monitors_changes(monitor_id))
 
-    def snapshots(self, monitor_id: str) -> builtins.list[MonitorSnapshot]:
-        return self._run(ops.monitors_snapshots(monitor_id))
+    async def snapshots(self, monitor_id: str) -> builtins.list[MonitorSnapshot]:
+        return await self._run(ops.monitors_snapshots(monitor_id))
 
-    def snapshot_content(self, monitor_id: str, snapshot_id: str) -> SnapshotContent:
-        return self._run(ops.monitors_snapshot_content(monitor_id, snapshot_id))
+    async def snapshot_content(self, monitor_id: str, snapshot_id: str) -> SnapshotContent:
+        return await self._run(ops.monitors_snapshot_content(monitor_id, snapshot_id))
 
-    def content(self, monitor_id: str, content_hash: str) -> SnapshotContent:
+    async def content(self, monitor_id: str, content_hash: str) -> SnapshotContent:
         """Site monitors: a tracked page's stored body by content hash."""
-        return self._run(ops.monitors_content(monitor_id, content_hash))
+        return await self._run(ops.monitors_content(monitor_id, content_hash))
 
-    def runs(self, monitor_id: str) -> builtins.list[dict[str, Any]]:
+    async def runs(self, monitor_id: str) -> builtins.list[dict[str, Any]]:
         """Site monitors: per-run summaries."""
-        return self._run(ops.monitors_runs(monitor_id))
+        return await self._run(ops.monitors_runs(monitor_id))
 
-    def pages(self, monitor_id: str) -> builtins.list[dict[str, Any]]:
+    async def pages(self, monitor_id: str) -> builtins.list[dict[str, Any]]:
         """Site monitors: tracked pages."""
-        return self._run(ops.monitors_pages(monitor_id))
+        return await self._run(ops.monitors_pages(monitor_id))
 
-    def remove_page(self, monitor_id: str, url: str) -> None:
-        self._run(ops.monitors_remove_page(monitor_id, url))
+    async def remove_page(self, monitor_id: str, url: str) -> None:
+        await self._run(ops.monitors_remove_page(monitor_id, url))
 
-    def restore_page(self, monitor_id: str, url: str) -> None:
-        self._run(ops.monitors_restore_page(monitor_id, url))
+    async def restore_page(self, monitor_id: str, url: str) -> None:
+        await self._run(ops.monitors_restore_page(monitor_id, url))
 
-    def test_alert(self, monitor_id: str) -> AlertTestResult:
+    async def test_alert(self, monitor_id: str) -> AlertTestResult:
         """Send a sample alert to the configured webhook/email."""
-        return self._run(ops.monitors_test_alert(monitor_id))
+        return await self._run(ops.monitors_test_alert(monitor_id))
 
-    def deliveries(self, monitor_id: str) -> builtins.list[Delivery]:
-        return self._run(ops.monitors_deliveries(monitor_id))
+    async def deliveries(self, monitor_id: str) -> builtins.list[Delivery]:
+        return await self._run(ops.monitors_deliveries(monitor_id))
 
-    def retry_delivery(self, monitor_id: str, delivery_id: str) -> None:
-        self._run(ops.monitors_retry_delivery(monitor_id, delivery_id))
+    async def retry_delivery(self, monitor_id: str, delivery_id: str) -> None:
+        await self._run(ops.monitors_retry_delivery(monitor_id, delivery_id))
 
 
 # ─── AI Visibility ────────────────────────────────────────────────────────────
 
 
-class AIVisibilityResource(_SyncAPI):
+class AsyncAIVisibilityResource(_AsyncAPI):
     """Ask ChatGPT, Gemini and Google AI Overview the same question. `client.ai_visibility`."""
 
-    def search(
+    async def search(
         self,
         query: str,
         *,
@@ -707,7 +707,7 @@ class AIVisibilityResource(_SyncAPI):
         `sources` defaults to every enabled engine (see `sources()`). Billed per
         completed source; failed sources are free.
         """
-        return self._run(
+        return await self._run(
             ops.ai_visibility_search(
                 self._cfg,
                 query,
@@ -718,33 +718,33 @@ class AIVisibilityResource(_SyncAPI):
             )
         )
 
-    def get(self, search_id: str) -> AIVisibilitySearch:
-        return self._run(ops.ai_visibility_get(search_id))
+    async def get(self, search_id: str) -> AIVisibilitySearch:
+        return await self._run(ops.ai_visibility_get(search_id))
 
-    def list(self) -> builtins.list[AIVisibilitySearchSummary]:
+    async def list(self) -> builtins.list[AIVisibilitySearchSummary]:
         """Your 20 most recent searches."""
-        return self._run(ops.ai_visibility_list())
+        return await self._run(ops.ai_visibility_list())
 
-    def sources(self) -> builtins.list[AIVisibilitySource]:
+    async def sources(self) -> builtins.list[AIVisibilitySource]:
         """Engines you can pass as `sources`."""
-        return self._run(ops.ai_visibility_sources())
+        return await self._run(ops.ai_visibility_sources())
 
-    def retry(self, search_id: str, source: str) -> AIVisibilitySourceResult:
+    async def retry(self, search_id: str, source: str) -> AIVisibilitySourceResult:
         """Re-run one failed source of an existing search."""
-        return self._run(ops.ai_visibility_retry(search_id, source))
+        return await self._run(ops.ai_visibility_retry(search_id, source))
 
 
 # ─── Webhooks ─────────────────────────────────────────────────────────────────
 
 
-class WebhooksResource(_SyncAPI):
+class AsyncWebhooksResource(_AsyncAPI):
     """
     Registered webhook endpoints and the delivery log. `client.webhooks`.
 
     To verify incoming deliveries use `anakin.verify_webhook_signature`.
     """
 
-    def create(
+    async def create(
         self,
         url: str,
         *,
@@ -752,12 +752,12 @@ class WebhooksResource(_SyncAPI):
         events: Sequence[str] | None = None,
     ) -> WebhookEndpoint:
         """Register an endpoint. Store `endpoint.secret`; it's only returned here."""
-        return self._run(ops.webhooks_create(url, description, events))
+        return await self._run(ops.webhooks_create(url, description, events))
 
-    def list(self) -> builtins.list[WebhookEndpoint]:
-        return self._run(ops.webhooks_list())
+    async def list(self) -> builtins.list[WebhookEndpoint]:
+        return await self._run(ops.webhooks_list())
 
-    def update(
+    async def update(
         self,
         endpoint_id: str,
         *,
@@ -766,20 +766,20 @@ class WebhooksResource(_SyncAPI):
         events: Sequence[str] | None = None,
         is_active: bool | None = None,
     ) -> WebhookEndpoint:
-        return self._run(
+        return await self._run(
             ops.webhooks_update(
                 endpoint_id, url=url, description=description, events=events, is_active=is_active
             )
         )
 
-    def delete(self, endpoint_id: str) -> None:
-        self._run(ops.webhooks_delete(endpoint_id))
+    async def delete(self, endpoint_id: str) -> None:
+        await self._run(ops.webhooks_delete(endpoint_id))
 
-    def test(self, endpoint_id: str) -> WebhookTestResult:
+    async def test(self, endpoint_id: str) -> WebhookTestResult:
         """Send a `webhook.test` event to the endpoint."""
-        return self._run(ops.webhooks_test(endpoint_id))
+        return await self._run(ops.webhooks_test(endpoint_id))
 
-    def deliveries(
+    async def deliveries(
         self,
         *,
         endpoint_id: str | None = None,
@@ -789,38 +789,38 @@ class WebhooksResource(_SyncAPI):
         limit: int | None = None,
     ) -> builtins.list[Delivery]:
         """Account-wide delivery log (30-day retention), newest first."""
-        return self._run(
+        return await self._run(
             ops.webhooks_deliveries(
                 endpoint_id=endpoint_id, event=event, status=status, job_id=job_id, limit=limit
             )
         )
 
-    def resend(self, delivery_id: str) -> None:
+    async def resend(self, delivery_id: str) -> None:
         """Resend a failed/exhausted delivery (byte-identical body and signature)."""
-        self._run(ops.webhooks_resend(delivery_id))
+        await self._run(ops.webhooks_resend(delivery_id))
 
-    def signing_secret(self) -> str:
+    async def signing_secret(self) -> str:
         """The default secret that signs per-request `webhook_url` deliveries."""
-        return self._run(ops.webhooks_signing_secret())
+        return await self._run(ops.webhooks_signing_secret())
 
-    def rotate_signing_secret(self) -> str:
-        return self._run(ops.webhooks_rotate_signing_secret())
+    async def rotate_signing_secret(self) -> str:
+        return await self._run(ops.webhooks_rotate_signing_secret())
 
-    def events(self) -> builtins.list[str]:
+    async def events(self) -> builtins.list[str]:
         """Every event type you can subscribe to."""
-        return self._run(ops.webhooks_events())
+        return await self._run(ops.webhooks_events())
 
 
 # ─── Browser sessions & Browser API ───────────────────────────────────────────
 
 
-class SessionsResource(_SyncAPI):
+class AsyncSessionsResource(_AsyncAPI):
     """Saved browser sessions (logged-in states). Accessible as `client.sessions`."""
 
-    def list(self, *, domain: str | None = None) -> builtins.list[BrowserSession]:
-        return self._run(ops.sessions_list(domain))
+    async def list(self, *, domain: str | None = None) -> builtins.list[BrowserSession]:
+        return await self._run(ops.sessions_list(domain))
 
-    def create(
+    async def create(
         self,
         *,
         website_url: str,
@@ -832,33 +832,33 @@ class SessionsResource(_SyncAPI):
         Start an interactive browser session. Open `handle.novnc_url`, log in,
         then call `save(...)`.
         """
-        return self._run(ops.sessions_create(website_url, name, record, session_type))
+        return await self._run(ops.sessions_create(website_url, name, record, session_type))
 
-    def save(self, browser_instance_id: str) -> BrowserSession:
+    async def save(self, browser_instance_id: str) -> BrowserSession:
         """Save the session state (cookies/storage) after the user has finished."""
-        return self._run(ops.sessions_save(browser_instance_id))
+        return await self._run(ops.sessions_save(browser_instance_id))
 
-    def update(self, session_id: str, *, name: str) -> BrowserSession:
-        return self._run(ops.sessions_update(session_id, name))
+    async def update(self, session_id: str, *, name: str) -> BrowserSession:
+        return await self._run(ops.sessions_update(session_id, name))
 
-    def delete(self, session_id: str) -> None:
-        self._run(ops.sessions_delete(session_id))
+    async def delete(self, session_id: str) -> None:
+        await self._run(ops.sessions_delete(session_id))
 
 
-class RecordingsResource(_SyncAPI):
+class AsyncRecordingsResource(_AsyncAPI):
     """Browser API session recordings (`connect_url(record=True)`)."""
 
-    def list(self) -> builtins.list[Recording]:
-        return self._run(ops.recordings_list())
+    async def list(self) -> builtins.list[Recording]:
+        return await self._run(ops.recordings_list())
 
-    def get(self, recording_id: str) -> Recording:
+    async def get(self, recording_id: str) -> Recording:
         """Includes `video_url`, presigned for 1 hour."""
-        return self._run(ops.recordings_get(recording_id))
+        return await self._run(ops.recordings_get(recording_id))
 
 
-class BrowserResource(_BrowserStaticMixin, _SyncAPI):
+class AsyncBrowserResource(_BrowserStaticMixin, _AsyncAPI):
     """Browser API helpers. Accessible as `client.browser`."""
 
     def __init__(self, transport: Any) -> None:
         super().__init__(transport)
-        self.recordings = RecordingsResource(transport)
+        self.recordings = AsyncRecordingsResource(transport)
