@@ -5,14 +5,14 @@ build-backend = "hatchling.build"
 [project]
 name = "anakin-sdk"
 dynamic = ["version"]
-description = "Official Python SDK for Anakin (anakin.io) — web scraping, crawling, search, and Wire actions."
+description = "Official Python SDK for Anakin (anakin.io): web scraping, crawling, search, Wire actions, monitoring and AI visibility."
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 authors = [
     { name = "Anakin", email = "engineering@anakin.io" },
 ]
-keywords = ["anakin", "scraping", "web-scraper", "crawler", "search", "sdk"]
+keywords = ["anakin", "scraping", "web-scraper", "crawler", "search", "wire", "monitoring", "ai-agents", "sdk"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -30,6 +30,7 @@ classifiers = [
 dependencies = [
     "httpx>=0.27.0",
     "pydantic>=2.6.0",
+    "typing-extensions>=4.7",
 ]
 
 [project.optional-dependencies]
@@ -44,7 +45,8 @@ dev = [
 
 [project.urls]
 Homepage = "https://anakin.io"
-Documentation = "https://anakin.io/docs"
+Documentation = "https://anakin.io/docs/sdks/python"
+Changelog = "https://github.com/Anakin-Inc/anakin-py/blob/main/CHANGELOG.md"
 Repository = "https://github.com/Anakin-Inc/anakin-py"
 Issues = "https://github.com/Anakin-Inc/anakin-py/issues"
 
@@ -76,6 +78,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["B011"]  # allow assert False in tests
+"src/anakin/async_client.py" = ["I001"]  # generated; renames reorder imports
 
 [tool.mypy]
 python_version = "3.10"

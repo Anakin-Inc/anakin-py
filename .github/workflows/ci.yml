@@ -35,6 +35,9 @@ jobs:
       - name: Type check (mypy)
         run: mypy src/
 
+      - name: Generated async client is up to date
+        run: python scripts/generate_async.py --check
+
       - name: Test (pytest)
         run: pytest --cov=anakin --cov-report=term-missing
 

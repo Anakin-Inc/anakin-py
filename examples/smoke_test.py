@@ -1,5 +1,5 @@
 """
-Smoke test — runs each Phase 1 method against the real api.anakin.io.
+Smoke test: runs the core methods against the real api.anakin.io.
 
 Usage:
     ANAKIN_API_KEY=ak-... python examples/smoke_test.py
@@ -81,8 +81,23 @@ def main() -> int:
     for i, r in enumerate(s_result.results[:3]):
         print(f"  [{i}] {(r.title or '')[:50]:50s}  {r.url}")
 
-    # NOTE: agentic_search (10 credits, ~2-5min) and wire (need valid action_id
-    # from dashboard) are not exercised here. Run those manually as needed.
+    # ─── 7. wire discovery + catalog (free) ─────────────────────────────────
+    banner("wire.discover('hacker news top stories') + wire.catalogs()")
+    matches = client.wire.discover("hacker news top stories", limit=3)
+    print(f"  matches={[m.action_id for m in matches]}")
+    assert matches, "expected at least one Wire action match"
+    catalogs = client.wire.catalogs()
+    print(f"  catalogs={len(catalogs)}")
+    assert len(catalogs) > 10, "expected a populated Wire catalog"
+
+    # ─── 8. ai_visibility.sources / webhooks.events / monitors.list (free) ───
+    banner("ai_visibility.sources() / webhooks.events() / monitors.list()")
+    print(f"  ai sources={[s.slug for s in client.ai_visibility.sources()]}")
+    print(f"  webhook events={client.webhooks.events()}")
+    print(f"  monitors={len(client.monitors.list())}")
+
+    # NOTE: agentic_search (~2-5 min), wire.run (credits) and monitors.create
+    # (credits per check) are not exercised here. Run those manually as needed.
 
     banner("ALL GOOD ✓")
     client.close()

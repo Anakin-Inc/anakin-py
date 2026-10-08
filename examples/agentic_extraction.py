@@ -1,10 +1,10 @@
 """
-Anakin Python SDK — agentic search with structured output.
+Anakin Python SDK: agentic search with structured output.
 
 Demonstrates the full multi-stage AI pipeline: prompt → web search →
 content extraction → structured JSON matching a user-supplied schema.
 
-Costs ~10 credits per call. Takes 1–5 minutes.
+Takes 1-5 minutes. The SDK waits up to 10 minutes by default.
 
 Run:
     ANAKIN_API_KEY=ak-... python examples/agentic_extraction.py
@@ -16,7 +16,6 @@ import json
 import os
 
 from anakin import Anakin
-
 
 # A JSON schema describing the structured data we want extracted.
 # The agentic pipeline will infer how to populate it from web sources.
@@ -43,9 +42,9 @@ SCHEMA = {
 
 def main() -> None:
     if not os.environ.get("ANAKIN_API_KEY"):
-        raise SystemExit("Set ANAKIN_API_KEY in your environment first.")
+        raise SystemExit("Set ANAKIN_API_KEY first (free key: https://anakin.io/signup).")
 
-    with Anakin(poll_timeout=600.0) as client:
+    with Anakin() as client:
         result = client.agentic_search(
             prompt=(
                 "List the top open-source HTTP libraries for Python with their "
