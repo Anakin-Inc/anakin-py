@@ -59,7 +59,7 @@ ONLY = sys.argv[sys.argv.index("--only") + 1] if "--only" in sys.argv else None
 EXPENSIVE = "--expensive" in sys.argv
 
 
-def main() -> int:  # noqa: C901 - a linear script of checks
+def main() -> int:
     if not os.environ.get("ANAKIN_API_KEY"):
         print("ANAKIN_API_KEY not set", file=sys.stderr)
         return 2
