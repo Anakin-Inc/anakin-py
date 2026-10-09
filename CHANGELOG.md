@@ -4,7 +4,7 @@ All notable changes to `anakin-sdk` are documented here. The project follows
 [Semantic Versioning](https://semver.org/); while in `0.x`, minor versions may
 contain breaking changes (called out below).
 
-## [0.2.0] - unreleased
+## [0.2.0] - 2026-10-09
 
 Brings the SDK up to the full public API and the Anakin MCP tool surface.
 
